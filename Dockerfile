@@ -1,24 +1,25 @@
-# --- 1. ビルドステージ（OpenJDK 17 + Maven が入ったRed Hat公式イメージ） ---
+# --- 1. ビルドステージ（Red Hat公式 OpenJDK 17 イメージ） ---
 FROM registry.access.redhat.com/ubi8/openjdk-17:1.18 AS build
 
-# UBIのopenjdkイメージはデフォルトで '/home/jboss' が作業ディレクトリになります
+# 作業ディレクトリの設定（UBIイメージの標準的なパス）
 WORKDIR /home/jboss/app
 
-# ソースコードをコンテナ内にコピー（権限をjbossユーザーに合わせる）
+# ソースコードをコンテナ内にコピー（所有権をjbossユーザーに設定）
 COPY --chown=jboss:jboss . .
 
-# テストを実行しつつ、JARファイルをビルド
-RUN mvn clean package
+# パイプライン側でテストは通過済みのため、ここではテストをスキップして高速にJARを作成
+RUN ./mvnw clean package -DskipTests
 
-# --- 2. 実行ステージ（軽量な Java 17 実行専用のRed Hat公式イメージ） ---
+# --- 2. 実行ステージ（Red Hat公式 軽量JRE 17 イメージ） ---
 FROM registry.access.redhat.com/ubi8/openjdk-17-runtime:1.18
 
 WORKDIR /home/jboss
 
-# ビルドステージから作成されたJARファイルだけをコピー
+# ビルドステージから生成されたJARファイルだけを抽出してコピー
 COPY --from=build /home/jboss/app/target/*.jar ./app.jar
 
+# アプリケーションのポート公開
 EXPOSE 8080
 
-# アプリケーションの起動コマンド
+# コンテナ起動時にJavaアプリケーションを実行
 ENTRYPOINT ["java", "-jar", "./app.jar"]
