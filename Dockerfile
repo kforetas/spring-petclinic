@@ -1,5 +1,5 @@
 # --- 1. ビルドステージ（Red Hat公式 OpenJDK 17 イメージ） ---
-FROM registry.access.redhat.com/ubi8/openjdk-17:1.18 AS build
+FROM registry.access.redhat.com/ubi9/openjdk-17:1.18 AS build
 
 # 作業ディレクトリの設定（UBIイメージの標準的なパス）
 WORKDIR /home/jboss/app
@@ -11,7 +11,7 @@ COPY --chown=jboss:jboss . .
 RUN ./mvnw clean package -DskipTests
 
 # --- 2. 実行ステージ（Red Hat公式 軽量JRE 17 イメージ） ---
-FROM registry.access.redhat.com/ubi8/openjdk-17-runtime:1.18
+FROM registry.access.redhat.com/ubi9/openjdk-17-runtime:1.18
 
 WORKDIR /home/jboss
 
