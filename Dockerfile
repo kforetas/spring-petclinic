@@ -5,7 +5,7 @@ FROM registry.access.redhat.com/ubi9/openjdk-17:1.18 AS build
 WORKDIR /home/jboss/app
 
 # ソースコードをコンテナ内にコピー（所有権をjbossユーザーに設定）
-COPY --chown=jboss:jboss . .
+COPY . .
 
 # パイプライン側でテストは通過済みのため、ここではテストをスキップして高速にJARを作成
 RUN ./mvnw clean package -DskipTests
